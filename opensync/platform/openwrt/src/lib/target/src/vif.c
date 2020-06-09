@@ -484,13 +484,6 @@ static bool security_to_syncmsg(
 }
 #endif
 
-static bool vif_is_enabled(int ssid_index)
-{
-    bool   enabled = false;
-    (void) wifi_getSSIDEnable(ssid_index, &enabled);
-    return enabled;
-}
-
 bool vif_external_ssid_update(const char *ssid, int ssid_index)
 {
     int ret;
@@ -765,7 +758,14 @@ bool vif_state_get(int ssidIndex, struct schema_Wifi_VIF_State *vstate)
     SCHEMA_SET_STR(vstate->mode, "ap");
 
     // enabled (w/ exists)
-    SCHEMA_SET_INT(vstate->enabled, vif_is_enabled(ssidIndex));
+    ret = wifi_getSsidEnabled(ssidIndex, &bval);
+    if (ret == UCI_OK)
+    {
+        SCHEMA_SET_INT(vstate->enabled, bval);
+    } else {
+        LOGW("Cannot getSsidEnabled for SSID index %d", ssidIndex );
+        vstate->enabled_exists = false;
+    }
 
     // bridge (w/ exists)
     memset(buf, 0, sizeof(buf));
@@ -1047,6 +1047,15 @@ bool target_vif_config_set2(
     {
         LOGE("%s: cannot get index for %s", __func__, ssid_ifname);
         return false;
+    }
+
+    if (changed->enabled)
+    {
+        ret = wifi_setSsidEnabled(ssid_index, vconf->enabled);
+        if (ret != true)
+        {
+            LOGE("%s: Failed to enable/disable SSID", ssid_ifname);
+        }
     }
 
     if (strlen(vconf->ssid) == 0)

@@ -97,7 +97,7 @@ int wifi_getVIFName(int ssid_index, char *ssid_ifname, size_t ssid_ifname_len);
 int wifi_getSSIDName(int ssid_index, char *ssid_name, size_t ssid_name_len);
 int wifi_getSSIDRadioIndex(int ssid_index, int *radio_index);
 int wifi_getSSIDRadioIfName(int ssid_index, char *radio_ifname, size_t radio_ifname_len);
-int wifi_getSSIDEnable(int ssid_index, bool *enabled);
+int wifi_getSsidEnabled(int ssid_index, bool *enabled);
 int wifi_getApBridgeInfo(int ssid_index, char *bridge_info, char *tmp1, char *tmp2, size_t bridge_info_len);
 int wifi_getApIsolationEnable(int ssid_index, bool *enabled);
 int wifi_getApSsidAdvertisementEnable(int ssid_index, bool *enabled);
@@ -113,6 +113,7 @@ bool wifi_setSSIDName(int ssis_index, char* ssidName);
 bool wifi_setApSecurityModeEnabled(int ssid_index, const struct schema_Wifi_VIF_Config *vconf);
 bool wifi_setApSsidAdvertisementEnable(int ssid_index, bool enabled);
 bool wifi_setApIsolationEnable(int ssid_index, bool enabled);
+bool wifi_setSsidEnabled(int ssid_index, bool enabled);
 
 /*
  * Functions to access OVSDB callbacks

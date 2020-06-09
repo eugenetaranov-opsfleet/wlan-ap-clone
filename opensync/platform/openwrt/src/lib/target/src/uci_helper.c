@@ -520,7 +520,7 @@ int wifi_getSSIDRadioIfName(int ssid_index, char *radio_ifname, size_t radio_ifn
     return rc;
 }
 
-int wifi_getSSIDEnable(int ssid_index, bool *enabled )
+int wifi_getSsidEnabled(int ssid_index, bool *enabled )
 {
     int rc;
     char result[20];
@@ -532,6 +532,22 @@ int wifi_getSSIDEnable(int ssid_index, bool *enabled )
         *enabled = false;
     }
     return UCI_OK;
+}
+
+
+bool wifi_setSsidEnabled(int ssid_index, bool enabled)
+{
+    char    val[4];
+
+    if (enabled) {
+        sprintf(val, "%d", 0);
+    } else {
+        sprintf(val, "%d", 1);
+    }
+
+    LOGN("wifi_setSsidEnabled =  %s", val);
+
+    return uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "disabled", val);
 }
 
 int wifi_getApBridgeInfo(int ssid_index, char *bridge_info, char *tmp1, char *tmp2, size_t bridge_info_len)
@@ -696,3 +712,4 @@ bool wifi_getApSecurityRadiusServer(
 
     return true;
 }
+

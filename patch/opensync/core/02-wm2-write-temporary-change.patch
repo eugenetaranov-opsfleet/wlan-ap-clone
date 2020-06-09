@@ -14,6 +14,16 @@ index b01a88f..5148636
 +//        memcpy(vconf.security, vstate.security, sizeof(vconf.security));
      }
  
+@@ -1109,8 +1109,7 @@ wm2_rconf_recalc(const char *ifname, bool force)
+         memset(&rstate, 0, sizeof(rstate));
+ 
+     if (want) {
+-        if (!rconf.enabled_exists || !rconf.enabled) {
+-            LOGW("%s: overriding 'enabled'; conf.db.bck needs fixing, or it's cloud bug PIR-12794", ifname);
++        if (!rconf.enabled_exists) {
+             rconf.enabled_exists = true;
+             rconf.enabled = true;
+         }
 @@ -1132,7 +1132,7 @@ wm2_rconf_recalc(const char *ifname, bool force)
          if (rconf.channel_exists && rconf.vif_configs_len == 0) {
              LOGD("%s: ignoring rconf channel %d: no vifs available yet",
