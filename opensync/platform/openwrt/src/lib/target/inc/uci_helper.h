@@ -13,8 +13,15 @@
 })
 
 #define UCI_READ(type, section, index, option, result, length) ({ \
-        if(!uci_read(type, section, index, option, result, length)) \
+        if(uci_read(type, section, index, option, result, length) != UCI_OK) \
         {\
+            return false; \
+        } \
+})
+
+#define UCI_REMOVE(type, section, index, option) ({ \
+        if(!uci_remove(type, section, index, option)) \
+        { \
             return false; \
         } \
 })

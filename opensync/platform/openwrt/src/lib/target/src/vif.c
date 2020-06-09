@@ -89,8 +89,6 @@ static c_item_t map_acl_modes[] =
 typedef enum
 {
     SEC_NONE                = 0,
-    SEC_WEP_64,
-    SEC_WEP_128,
     SEC_WPA_PERSONAL,
     SEC_WPA_ENTERPRISE,
     SEC_WPA2_PERSONAL,
@@ -102,14 +100,12 @@ typedef enum
 static c_item_t map_security[] =
 {
     C_ITEM_STR(SEC_NONE,                    "none"),
-    C_ITEM_STR(SEC_WEP_64,                  "WEP-64"),
-    C_ITEM_STR(SEC_WEP_128,                 "WEP-128"),
     C_ITEM_STR(SEC_WPA_PERSONAL,            "psk"),
-    C_ITEM_STR(SEC_WPA_ENTERPRISE,          "WPA-Enterprise"),
+    C_ITEM_STR(SEC_WPA_ENTERPRISE,          "wpa"),
     C_ITEM_STR(SEC_WPA2_PERSONAL,           "psk2"),
     C_ITEM_STR(SEC_WPA2_ENTERPRISE,         "wpa2"),
-    C_ITEM_STR(SEC_WPA_WPA2_PERSONAL,       "WPA-WPA2-Personal"),
-    C_ITEM_STR(SEC_WPA_WPA2_ENTERPRISE,     "WPA-WPA2-Enterprise")
+    C_ITEM_STR(SEC_WPA_WPA2_PERSONAL,       "psk-mixed"),
+    C_ITEM_STR(SEC_WPA_WPA2_ENTERPRISE,     "wpa-mixed")
 };
 
 #if 0
@@ -382,12 +378,6 @@ static bool security_to_state(
         case SEC_NONE:
             set_security_key_value(vstate, 0, OVSDB_SECURITY_ENCRYPTION, OVSDB_SECURITY_ENCRYPTION_OPEN);
             return true;
-
-        case SEC_WEP_64:
-            return set_enc_mode(vstate, ssid_index, OVSDB_SECURITY_ENCRYPTION_WEP, OVSDB_SECURITY_MODE_WEP64, false);
-
-        case SEC_WEP_128:
-            return set_enc_mode(vstate, ssid_index, OVSDB_SECURITY_ENCRYPTION_WEP, OVSDB_SECURITY_MODE_WEP128, false);
 
         case SEC_WPA_PERSONAL:
             return set_enc_mode(vstate, ssid_index, OVSDB_SECURITY_ENCRYPTION_WPA_PSK, OVSDB_SECURITY_MODE_WPA1, false);

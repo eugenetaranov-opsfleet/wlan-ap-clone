@@ -82,7 +82,7 @@ bool uci_write(char* type, char* section, int section_index, char * option, char
     struct uci_context *ctx;
     char   uci_cmd[80];
     int rc;
- 
+
     if (!uci_value)  return UCI_ERR_MEM;
 
     snprintf(uci_cmd,sizeof(uci_cmd),"%s.@%s[%d].%s", type, section, section_index, option);
@@ -117,6 +117,46 @@ bool uci_write(char* type, char* section, int section_index, char * option, char
 
     uci_free_context(ctx);
     return true;
+}
+
+int uci_remove(char* type, char* section, int section_index, char* option)
+{
+    struct uci_ptr ptr;
+    struct uci_context *ctx;
+    char   uci_cmd[80];
+    int rc;
+
+    snprintf(uci_cmd,sizeof(uci_cmd),"%s.@%s[%d].%s", type, section, section_index, option);
+    LOGD("UCI command remove: %s", uci_cmd );
+
+    ctx = uci_alloc_context();
+    if (!ctx) return false;
+
+    if ((rc = uci_lookup_ptr(ctx, &ptr, uci_cmd, true)) != UCI_OK ||
+            (ptr.o == NULL || ptr.o->v.string == NULL))
+    {
+        LOGN("UCI remove %s.@%s[%d].%s not found: %d", type, section, section_index, option, rc);
+        uci_free_context(ctx);
+        return UCI_OK;
+    }
+
+    if (ptr.flags & UCI_LOOKUP_COMPLETE)
+    {
+        rc = uci_delete(ctx, &ptr);
+    } else {
+        LOGN("UCI lookup %s.@%s[%d].%s not complete: %d", type, section, section_index, option, rc);
+    }
+
+    // TODO: Might want to put commit in its own function
+    if ((rc = uci_commit(ctx, &ptr.p, false)) != UCI_OK)
+    {
+        LOGN("UCI remove %s.@%s[%d].%s commit error: %d", type, section, section_index, option, rc);
+        uci_free_context(ctx);
+        return false;
+    }
+
+    uci_free_context(ctx);
+    return rc;
 }
 
 /* 
@@ -576,11 +616,12 @@ bool wifi_setApSecurityModeEnabled(int ssid_index,
     if (strcmp(encryption, OVSDB_SECURITY_ENCRYPTION_OPEN) == 0)
     {
         UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "encryption", "none");
+        UCI_REMOVE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "key");
     }
     else if (strcmp(encryption, OVSDB_SECURITY_ENCRYPTION_WPA_PSK) == 0)
     {
         char key[128];
-        const char *mode = SCHEMA_KEY_VAL(vconf->security, "mode");
+        const char *mode = SCHEMA_KEY_VAL(vconf->security, SCHEMA_CONSTS_SECURITY_MODE);
         memset(key, 0, sizeof(key));
         snprintf(key, sizeof(key) - 1, "%s", (char *)SCHEMA_KEY_VAL(vconf->security, SCHEMA_CONSTS_SECURITY_KEY));
 
@@ -590,20 +631,47 @@ bool wifi_setApSecurityModeEnabled(int ssid_index,
         {
             UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "encryption", "psk2");
         }
+        else if (strcmp(mode, OVSDB_SECURITY_MODE_WPA1) == 0)
+        {
+            UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "encryption", "psk");
+        }
         else if (strcmp(mode, OVSDB_SECURITY_MODE_MIXED) == 0)
         {
             UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "encryption", "psk-mixed");
         }
+        else
+        {
+            return false;
+        }
     }
     else if (strcmp(encryption, OVSDB_SECURITY_ENCRYPTION_WPA_EAP) == 0)
     {
-        UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "encryption", "wpa2");
+        const char *mode = SCHEMA_KEY_VAL(vconf->security, SCHEMA_CONSTS_SECURITY_MODE);
+
+        if (strcmp(mode, OVSDB_SECURITY_MODE_WPA2) == 0)
+        {
+            UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "encryption", "wpa2");
+        }
+        else if (strcmp(mode, OVSDB_SECURITY_MODE_WPA1) == 0)
+        {
+            UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "encryption", "wpa");
+        }
+        else if (strcmp(mode, OVSDB_SECURITY_MODE_MIXED) == 0)
+        {
+            UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "encryption", "wpa-mixed");
+        }
+        else
+        {
+            return false;
+        }
+
         UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "server",
                 (char *)SCHEMA_KEY_VAL(vconf->security, SCHEMA_CONSTS_SECURITY_RADIUS_IP));
         UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "port",
                 (char *)SCHEMA_KEY_VAL(vconf->security, SCHEMA_CONSTS_SECURITY_RADIUS_PORT));
-        UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "key",
+        UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "auth_secret",
                 (char *)SCHEMA_KEY_VAL(vconf->security, SCHEMA_CONSTS_SECURITY_RADIUS_SECRET));
+        UCI_REMOVE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "key");
     }
 
     return rc;
@@ -624,7 +692,7 @@ bool wifi_getApSecurityRadiusServer(
 {
     UCI_READ(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "server", radius_ip, UCI_BUFFER_SIZE);
     UCI_READ(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "port", radius_port, UCI_BUFFER_SIZE);
-    UCI_READ(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "key", radius_secret, UCI_BUFFER_SIZE);
+    UCI_READ(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "auth_secret", radius_secret, UCI_BUFFER_SIZE);
 
     return true;
 }
