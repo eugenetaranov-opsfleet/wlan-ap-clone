@@ -27,6 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdbool.h>
 #include <string.h>
 #include <target.h>
+#include <os_types.h>
+#include <os_nif.h>
 #include "log.h"
 
 /* devinfo is /dev/mtd9 for ECW5410*/
@@ -91,9 +93,29 @@ bool target_model_get(void *buff, size_t buffsz)
 
 bool target_serial_get(void *buff, size_t buffsz)
 {
+    os_macaddr_t mac;
+    char mac_buff[TARGET_BUFF_SZ];
+    int n;
+
     if (!devInfoSerialNumber_saved)  {
         if ( NULL == get_devinfo_record( "serial_number=", devInfoSerialNumber, DEV_INFO_RECORD_SZ))
+        {
+            if (true == os_nif_macaddr("eth0", &mac))
+            {
+                memset(mac_buff, 0, sizeof(mac_buff));
+                n = snprintf(mac_buff, sizeof(mac_buff), PRI(os_macaddr_plain_t), FMT(os_macaddr_t, mac));
+                if (n == OS_MACSTR_PLAIN_SZ) {
+                    LOG(ERR, "buffer not large enough");
+                    return false;
+                }
+                strncpy(devInfoSerialNumber, mac_buff, buffsz);
+            }
+        }
+        else
+        {
             snprintf(devInfoSerialNumber, DEV_INFO_RECORD_SZ, "%s", "ECW5410-TIP-01");
+        }
+
         devInfoSerialNumber_saved = true;
     }
     strncpy(buff, devInfoSerialNumber, buffsz);
