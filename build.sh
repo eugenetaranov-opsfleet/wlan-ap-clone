@@ -25,7 +25,7 @@ if [ ! "$(ls -A $BUILD_DIR)" ]; then
     git apply patch/opensync/core/01-add-lib-uci-to-wm2.patch --directory=opensync/core || true
     git apply patch/opensync/core/02-wm2-write-temporary-change.patch --directory=opensync/core || true
     git apply patch/opensync/core/03-sm-add-libiwinfo.patch --directory=opensync/core || true
-
+    git apply patch/opensync/core/04-wm-add-libiwinfo.patch --directory=opensync/core || true
     
     # Apply patches to Openwrt
      cd $BUILD_DIR
