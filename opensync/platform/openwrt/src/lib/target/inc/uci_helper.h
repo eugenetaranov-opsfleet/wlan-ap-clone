@@ -76,7 +76,7 @@ int wifi_getRadioChannel(int radio_idx, int *channel);
 int wifi_getRadioEnable(int radio_idx, bool *enabled);
 int wifi_getRadioTxPower(int radio_idx, int *txpower );
 int wifi_getRadioBeaconInterval(int radio_idx, int *beacon_int);
-int wifi_getRadioFreqBand(int radio_idx, char *freq_band);
+int wifi_getRadioFreqBand(int *allowedChannels, int numberOfChannels, char *freq_band);
 int wifi_getRadioHtMode(int radio_idx, char *ht_mode);
 int wifi_getRadioHwMode(int radio_idx, char *hw_mode);
 

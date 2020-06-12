@@ -255,30 +255,27 @@ int wifi_getRadioBeaconInterval(int radio_idx, int *beacon_int)
 
 static eFreqBand freqBand_capture[UCI_MAX_RADIOS] = {eFreqBand_5GU,eFreqBand_24G,eFreqBand_5GL};
 
-int wifi_getRadioFreqBand(int radio_idx, char *freq_band)
+int wifi_getRadioFreqBand(int *allowedChannels, int numberOfChannels, char *freq_band)
 {
-    int rc = true;
-    if (radio_idx < UCI_MAX_RADIOS) {
-       switch (freqBand_capture[radio_idx]) {
-       case eFreqBand_24G: 
-          strcpy(freq_band, "2.4G");
-          break;
-       case eFreqBand_5G: 
-          strcpy(freq_band, "5G");
-          break;
-       case eFreqBand_5GU: 
-          strcpy(freq_band, "5GU");
-          break;
-       case eFreqBand_5GL: 
-          strcpy(freq_band, "5GL");
-          break;
-       default:
-          rc=false;
-          break;
-       }
-   } else {
-       rc = false; 
-   }
+    int rc = false;
+
+    if(allowedChannels[0] >= 1 && allowedChannels[numberOfChannels -1] <= 11){
+	strcpy(freq_band, "2.4G");
+	rc = true;
+    }
+    if(allowedChannels[0] >= 36 && allowedChannels[numberOfChannels -1] <= 64){
+	strcpy(freq_band, "5GL");
+	rc = true;
+    }
+    if(allowedChannels[0] >= 100 && allowedChannels[numberOfChannels -1] <= 165){
+	strcpy(freq_band, "5GU");
+	rc = true;
+    }
+    if(allowedChannels[0] <= 64 && allowedChannels[numberOfChannels -1] >= 100){
+	strcpy(freq_band, "5G");
+	rc = true;
+    }
+
    return rc;
 }
 

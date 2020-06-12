@@ -201,7 +201,7 @@ static bool radio_state_get(
 #endif
     wifi_getRadioAllowedChannel(radioIndex, rstate->allowed_channels, &(rstate->allowed_channels_len));
 
-    if (UCI_OK == wifi_getRadioFreqBand(radioIndex, rstate->freq_band)) {
+    if (UCI_OK == wifi_getRadioFreqBand(rstate->allowed_channels, rstate->allowed_channels_len, rstate->freq_band)) {
 	rstate->freq_band_exists = true;
         LOGN("radio freq band: %s", rstate->freq_band);
     }
