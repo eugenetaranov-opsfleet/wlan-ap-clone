@@ -20,7 +20,7 @@
 })
 
 #define UCI_REMOVE(type, section, index, option) ({ \
-        if(!uci_remove(type, section, index, option)) \
+        if(uci_remove(type, section, index, option) != UCI_OK) \
         { \
             return false; \
         } \

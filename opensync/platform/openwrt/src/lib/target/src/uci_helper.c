@@ -633,6 +633,7 @@ bool wifi_setApSecurityModeEnabled(int ssid_index,
     {
         UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "encryption", "none");
         UCI_REMOVE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "key");
+        UCI_REMOVE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ieee80211w");
     }
     else if (strcmp(encryption, OVSDB_SECURITY_ENCRYPTION_WPA_PSK) == 0)
     {
@@ -642,6 +643,7 @@ bool wifi_setApSecurityModeEnabled(int ssid_index,
         snprintf(key, sizeof(key) - 1, "%s", (char *)SCHEMA_KEY_VAL(vconf->security, SCHEMA_CONSTS_SECURITY_KEY));
 
         UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "key", key);
+        UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ieee80211w", "1");
 
         if (strcmp(mode, OVSDB_SECURITY_MODE_WPA2) == 0)
         {
@@ -687,6 +689,7 @@ bool wifi_setApSecurityModeEnabled(int ssid_index,
                 (char *)SCHEMA_KEY_VAL(vconf->security, SCHEMA_CONSTS_SECURITY_RADIUS_PORT));
         UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "auth_secret",
                 (char *)SCHEMA_KEY_VAL(vconf->security, SCHEMA_CONSTS_SECURITY_RADIUS_SECRET));
+        UCI_WRITE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ieee80211w", "1");
         UCI_REMOVE(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "key");
     }
 
