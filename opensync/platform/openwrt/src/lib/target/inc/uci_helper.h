@@ -81,6 +81,7 @@ int wifi_getRadioHtMode(int radio_idx, char *ht_mode);
 int wifi_getRadioHwMode(int radio_idx, char *hw_mode);
 int wifi_getTxChainMask(int radioIndex, int *txChainMask);
 int wifi_getRadioAllowedChannel(int radioIndex, int *allowedChannelList, int *allowedChannelListLen);
+int wifi_getRadioMacaddress(int radio_idx, char *mac);
 
 /*
  *  Functions to set Radio parameters
@@ -103,7 +104,7 @@ int wifi_getSsidEnabled(int ssid_index, bool *enabled);
 int wifi_getApBridgeInfo(int ssid_index, char *bridge_info, char *tmp1, char *tmp2, size_t bridge_info_len);
 int wifi_getApIsolationEnable(int ssid_index, bool *enabled);
 int wifi_getApSsidAdvertisementEnable(int ssid_index, bool *enabled);
-int wifi_getBaseBSSID(int ssid_index,char *buf, size_t buf_len);
+int wifi_getBaseBSSID(int ssid_index,char *buf, size_t buf_len,int radio_idx);
 int wifi_getApSecurityKeyPassphrase(int ssid_index, char *buf, size_t buf_len);
 bool wifi_getApSecurityModeEnabled(int ssid_index, char *buf, size_t buf_len);
 bool wifi_getApSecurityRadiusServer(int ssid_index, char *radius_ip, char *radius_port, char *radius_secret);
