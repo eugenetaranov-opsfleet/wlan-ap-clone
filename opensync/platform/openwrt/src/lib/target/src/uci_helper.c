@@ -1,6 +1,7 @@
 #include <string.h>
 #include "log.h"
-#include "uci_helper.h" 
+#include "uci_helper.h"
+#include "iwinfo.h"
 
 static int g_nRadios = -1;
 static int g_nVIFs = -1;
@@ -253,11 +254,112 @@ int wifi_getRadioBeaconInterval(int radio_idx, int *beacon_int)
     return rc;
 }
 
+int wifi_getTxChainMask(int radioIndex, int *txChainMask)
+{
+    char command[64];
+    FILE *fp = NULL;
+    int fsize = 0;
+    char *buffer=NULL;
+    char *point=NULL;
+
+    memset(command, 0, 64);
+
+    sprintf(command,"iw phy%d info | grep 'Available Antennas' > /tmp/antennainfo.txt", radioIndex);
+
+    if(system(command) == -1)
+    {
+	return false;
+    }
+
+    fp = fopen("/tmp/antennainfo.txt","r");
+
+    if(fp != NULL)
+    {
+	fseek(fp, 0, SEEK_END);
+	fsize = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+	buffer = malloc(fsize+1);
+	fread(buffer, 1, fsize, fp);
+	buffer[fsize] = 0;
+	fclose(fp);
+
+	point = strstr(buffer, "0x");
+	point = point + 2;
+        sscanf(point, "%d", txChainMask);
+
+	return true;
+    }
+
+    return false;
+}
+
+int wifi_getRadioAllowedChannel(int radioIndex, int *allowedChannelList, int *allowedChannelListLen)
+{
+
+    char radio_if_name[6];
+    char buf[IWINFO_BUFSIZE];
+    int  buflen;
+    int  numberOfChannels=0;
+    int  rc=false;
+    struct iwinfo_freqlist_entry  *freq_list    = NULL;
+
+    memset(radio_if_name, 0, sizeof(radio_if_name));
+
+    if(radioIndex == 0)
+    {
+	strncpy(radio_if_name, "phy0", sizeof(radio_if_name));
+    }
+    else if(radioIndex == 1)
+    {
+	strncpy(radio_if_name, "phy1", sizeof(radio_if_name));
+    }
+    else if(radioIndex == 2)
+    {
+	strncpy(radio_if_name, "phy2", sizeof(radio_if_name));
+    }
+    else
+    {
+	return rc;
+    }
+
+    // find iwinfo type
+    const char *if_type = iwinfo_type(radio_if_name);
+    const struct iwinfo_ops *winfo_ops = iwinfo_backend_by_name(if_type);
+
+    if(0 != winfo_ops->freqlist(radio_if_name, buf, &buflen))
+    {
+	return rc;
+    }
+
+    freq_list = (struct iwinfo_freqlist_entry *)buf;
+
+    for(int i = 0; i < buflen; i += sizeof(struct iwinfo_freqlist_entry))
+    {
+	allowedChannelList[numberOfChannels] = freq_list->channel;
+
+	LOGN("iwinfo :radio channel: %d", freq_list->channel);
+	LOGN("iwinfo : state: radio channel: %d", allowedChannelList[numberOfChannels]);
+	freq_list++;
+	numberOfChannels++;
+    }
+
+    *allowedChannelListLen = numberOfChannels;
+
+    if(numberOfChannels != 0)
+	rc = true;
+
+    return rc;
+
+}
+
 static eFreqBand freqBand_capture[UCI_MAX_RADIOS] = {eFreqBand_5GU,eFreqBand_24G,eFreqBand_5GL};
 
 int wifi_getRadioFreqBand(int *allowedChannels, int numberOfChannels, char *freq_band)
 {
     int rc = false;
+
+    if(numberOfChannels == 0)
+	return rc;
 
     if(allowedChannels[0] >= 1 && allowedChannels[numberOfChannels -1] <= 11){
 	strcpy(freq_band, "2.4G");
@@ -545,6 +647,32 @@ bool wifi_setSsidEnabled(int ssid_index, bool enabled)
     LOGN("wifi_setSsidEnabled =  %s", val);
 
     return uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "disabled", val);
+}
+
+bool wifi_setFtMode(int ssid_index,
+        const struct schema_Wifi_VIF_Config *vconf)
+{
+    int rc;
+    char mobilityDdomain[5];
+    char ft_psk[2];
+    const char *encryption = SCHEMA_KEY_VAL(vconf->security, SCHEMA_CONSTS_SECURITY_ENCRYPT);
+
+    if(vconf->ft_mobility_domain != 0 && (strcmp(encryption,OVSDB_SECURITY_ENCRYPTION_OPEN) !=0) )
+	{
+	  sprintf(mobilityDdomain, "%02x", vconf->ft_mobility_domain);
+	  sprintf(ft_psk, "%d", vconf->ft_psk);
+	  rc = uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ieee80211r", "1");
+          uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "mobility_domain", mobilityDdomain);
+          uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ft_psk_generate_local", ft_psk);
+          uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ft_over_ds", "0");
+          uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "reassociation_deadline", "1");
+	}
+     else
+	{
+	  rc = uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ieee80211r", "0");
+	}
+
+    return rc;
 }
 
 int wifi_getApBridgeInfo(int ssid_index, char *bridge_info, char *tmp1, char *tmp2, size_t bridge_info_len)

@@ -79,6 +79,8 @@ int wifi_getRadioBeaconInterval(int radio_idx, int *beacon_int);
 int wifi_getRadioFreqBand(int *allowedChannels, int numberOfChannels, char *freq_band);
 int wifi_getRadioHtMode(int radio_idx, char *ht_mode);
 int wifi_getRadioHwMode(int radio_idx, char *hw_mode);
+int wifi_getTxChainMask(int radioIndex, int *txChainMask);
+int wifi_getRadioAllowedChannel(int radioIndex, int *allowedChannelList, int *allowedChannelListLen);
 
 /*
  *  Functions to set Radio parameters
@@ -105,6 +107,7 @@ int wifi_getBaseBSSID(int ssid_index,char *buf, size_t buf_len);
 int wifi_getApSecurityKeyPassphrase(int ssid_index, char *buf, size_t buf_len);
 bool wifi_getApSecurityModeEnabled(int ssid_index, char *buf, size_t buf_len);
 bool wifi_getApSecurityRadiusServer(int ssid_index, char *radius_ip, char *radius_port, char *radius_secret);
+bool wifi_setFtMode(int ssid_index, const struct schema_Wifi_VIF_Config *vconf);
 
 /*
  *  Functions to set SSID parameters

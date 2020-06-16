@@ -1105,6 +1105,15 @@ bool target_vif_config_set2(
             LOGE("%s: Failed to set new encryption", ssid_ifname);
         }
     }
+/*
+    if (changed->ft_psk || changed->ft_mobility_domain)
+    {
+        ret = wifi_setFtMode(ssid_index, vconf);
+        if (ret != true)
+        {
+            LOGE("%s: Failed to set Ft paramerters", ssid_ifname);
+        }
+    }*/
 
     if (changed->ap_bridge)
     {

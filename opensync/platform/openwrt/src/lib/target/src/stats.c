@@ -103,17 +103,17 @@ bool target_stats_clients_get(
 
 	if(strcmp(radio_cfg->if_name, "home-ap-24") == 0)
 	{
-		strncpy(stats_if_name, "wlan1", sizeof(stats_if_name));
+		strncpy(stats_if_name, "phy1", sizeof(stats_if_name));
 		radio_type = RADIO_TYPE_2G;
 	}
 	else if(strcmp(radio_cfg->if_name, "home-ap-l50") == 0)
 	{
-		strncpy(stats_if_name, "wlan2", sizeof(stats_if_name));
+		strncpy(stats_if_name, "phy2", sizeof(stats_if_name));
 		radio_type = RADIO_TYPE_5GL;
 	}
 	else if(strcmp(radio_cfg->if_name, "home-ap-u50") == 0)
 	{
-		strncpy(stats_if_name, "wlan0", sizeof(stats_if_name));
+		strncpy(stats_if_name, "phy0", sizeof(stats_if_name));
 		radio_type = RADIO_TYPE_5GU;
 	}
 	else
