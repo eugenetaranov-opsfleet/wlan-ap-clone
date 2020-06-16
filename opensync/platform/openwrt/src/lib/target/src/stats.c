@@ -388,6 +388,9 @@ bool target_stats_scan_get(
       fp = fopen("/tmp/scanwlan0.dump","r");
     }
 
+    if(fp == NULL)
+      return false;
+
     fseek(fp, 0, SEEK_END);
     fsize = ftell(fp);
     fseek(fp, 0, SEEK_SET);

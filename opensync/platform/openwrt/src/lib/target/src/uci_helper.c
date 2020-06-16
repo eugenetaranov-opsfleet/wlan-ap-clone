@@ -689,10 +689,10 @@ bool wifi_setFtMode(int ssid_index,
 	{
 	  sprintf(mobilityDdomain, "%02x", vconf->ft_mobility_domain);
 	  sprintf(ft_psk, "%d", vconf->ft_psk);
-	  rc = uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ieee80211r", "1");
-          uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "mobility_domain", mobilityDdomain);
-          uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ft_psk_generate_local", ft_psk);
-          uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ft_over_ds", "0");
+	  rc = uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ieee80211r", "1") &&
+          uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "mobility_domain", mobilityDdomain) &&
+          uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ft_psk_generate_local", ft_psk) &&
+          uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "ft_over_ds", "0") &&
           uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "reassociation_deadline", "1");
 	}
      else
