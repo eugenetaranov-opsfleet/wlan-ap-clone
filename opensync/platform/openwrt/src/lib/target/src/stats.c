@@ -45,7 +45,6 @@ bool target_is_interface_ready(char *if_name)
     return true;
 }
 
-
 /******************************************************************************
  *  STATS definitions
  *****************************************************************************/
@@ -99,21 +98,23 @@ bool target_stats_clients_get(
 	char stats_if_name[15];
 	radio_type_t radio_type;
 
-	memset(stats_if_name, 0, sizeof(stats_if_name));
+	memset(stats_if_name, '\0', sizeof(stats_if_name));
+
+	if(!target_map_cloud_to_iw(radio_cfg->if_name, stats_if_name, sizeof(stats_if_name)))
+	{
+	    return false;
+	}
 
 	if(strcmp(radio_cfg->if_name, "home-ap-24") == 0)
 	{
-		strncpy(stats_if_name, "wlan1", sizeof(stats_if_name));
 		radio_type = RADIO_TYPE_2G;
 	}
 	else if(strcmp(radio_cfg->if_name, "home-ap-l50") == 0)
 	{
-		strncpy(stats_if_name, "wlan2", sizeof(stats_if_name));
 		radio_type = RADIO_TYPE_5GL;
 	}
 	else if(strcmp(radio_cfg->if_name, "home-ap-u50") == 0)
 	{
-		strncpy(stats_if_name, "wlan0", sizeof(stats_if_name));
 		radio_type = RADIO_TYPE_5GU;
 	}
 	else
@@ -277,37 +278,28 @@ bool target_stats_scan_start(
 
     char command[64];
     uint32_t frequency;
+    char scan_if_name[15];
     memset(command, 0, strlen(command));
+    memset(scan_if_name, '\0', strlen(scan_if_name));
     //sprintf(command,"iw %s scan duration %d", radio_cfg->if_name, dwell_time);
     //sprintf(command,"iw wlan0 scan duration 30");
 
-    if(strcmp(radio_cfg->if_name, "home-ap-24") == 0)
+    if(!target_map_cloud_to_iw(radio_cfg->if_name, scan_if_name, sizeof(scan_if_name)))
     {
-      frequency = channel_to_freq(chan_list[0]);
-      sprintf(command,"iw wlan1 scan duration 30 freq %d", frequency);
-    }
-    else if(strcmp(radio_cfg->if_name, "home-ap-l50") == 0)
-    {
-      frequency = channel_to_freq(chan_list[0]);
-      sprintf(command,"iw wlan2 scan duration 30 freq %d", frequency);
-      LOGN("Freq: %d %d", frequency, chan_list[0]);
-    }
-    else if(strcmp(radio_cfg->if_name, "home-ap-u50") == 0)
-    {
-      frequency = channel_to_freq(chan_list[0]);
-      sprintf(command,"iw wlan0 scan duration 30 freq %d", frequency);
+        return false;
     }
 
+    frequency = channel_to_freq(chan_list[0]);
+    sprintf(command,"iw %s scan duration 30 freq %d", scan_if_name, frequency);
+    LOGN("Freq: %d %d", frequency, chan_list[0]);
     LOGN("scanning command : %s", command);
     LOGN("channel num: %d", chan_num);
     LOGN("scan_type : %d", scan_type);
     if(system(command) == -1)
     {
-
-    (*scan_cb)(scan_ctx, false);
-    LOGN("SCAN FAILED");
-    return false;
-
+        (*scan_cb)(scan_ctx, false);
+        LOGN("SCAN FAILED");
+        return false;
     }
 
     (*scan_cb)(scan_ctx, true);
@@ -320,26 +312,22 @@ bool target_stats_scan_stop(
         radio_scan_type_t scan_type)
 {
     char command[64];
+    char scan_if_name[15];
 
+    memset(scan_if_name, '\0', strlen(scan_if_name));
     memset(command, 0, strlen(command));
 
-    if(strcmp(radio_cfg->if_name, "home-ap-24") == 0)
+    if(!target_map_cloud_to_iw(radio_cfg->if_name, scan_if_name, sizeof(scan_if_name)))
     {
-    sprintf(command,"iw wlan1 scan abort");
-    }
-    else if(strcmp(radio_cfg->if_name, "home-ap-l50") == 0)
-    {
-    sprintf(command,"iw wlan2 scan abort");
-    }
-    else if(strcmp(radio_cfg->if_name, "home-ap-u50") == 0)
-    {
-    sprintf(command,"iw wlan0 scan abort");
+        return false;
     }
 
+    sprintf(command,"iw %s scan abort", scan_if_name);
     LOGN("stop scan command : %s", command);
+
     if(system(command) == -1)
     {
-	return false;
+        return false;
     }
 
     return true;
@@ -362,30 +350,23 @@ bool target_stats_scan_get(
     char ssid[32];
     //char channwidth[4];
     char TSF[20];
+    char scan_if_name[15];
 
+    memset(scan_if_name, '\0', strlen(scan_if_name));
     memset(command, 0, strlen(command));
  //   sprintf(command,"iw %s scan dump  > /tmp/scan%s.dump", radio_cfg->if_name, radio_cfg->if_name);
  //   LOGN("dump scan command : %s", command);
-    if(strcmp(radio_cfg->if_name, "home-ap-24") == 0)
+
+    if(!target_map_cloud_to_iw(radio_cfg->if_name, scan_if_name, sizeof(scan_if_name)))
     {
-      sprintf(command,"iw wlan1 scan dump  > /tmp/scanwlan1.dump");
-      LOGN("dump scan command : %s", command);
-      if(system(command) != -1)
-      fp = fopen("/tmp/scanwlan1.dump","r");
+        return false;
     }
-    else if(strcmp(radio_cfg->if_name, "home-ap-l50") == 0)
+
+    sprintf(command,"iw %s scan dump  > /tmp/scan.dump", scan_if_name);
+    LOGN("dump scan command : %s", command);
+    if(system(command) != -1)
     {
-      sprintf(command,"iw wlan2 scan dump  > /tmp/scanwlan2.dump");
-      LOGN("dump scan command : %s", command);
-      if(system(command) != -1)
-      fp = fopen("/tmp/scanwlan2.dump","r");
-    }
-    else if(strcmp(radio_cfg->if_name, "home-ap-u50") == 0)
-    {
-      sprintf(command,"iw wlan0 scan dump  > /tmp/scanwlan0.dump");
-      LOGN("dump scan command : %s", command);
-      if(system(command) != -1)
-      fp = fopen("/tmp/scanwlan0.dump","r");
+        fp = fopen("/tmp/scan.dump","r");
     }
 
     if(fp == NULL)

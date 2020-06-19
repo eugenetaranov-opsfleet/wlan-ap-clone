@@ -308,17 +308,7 @@ bool target_radio_config_init2()
     struct schema_Wifi_Radio_Config rconfig;
     struct schema_Wifi_Radio_State  rstate;
 
-    target_map_init();
-
-    //Radio mappings
-    target_map_insert("wifi0", "radio1");
-    target_map_insert("wifi1", "radio2");
-    target_map_insert("wifi2", "radio0");
-
-    //VIF mappings
-    target_map_insert("home-ap-u50", "default_radio0");
-    target_map_insert("home-ap-24", "default_radio1");
-    target_map_insert("home-ap-l50", "default_radio2");
+    target_ifname_map_init();
 
 #if 1
     ret = wifi_getRadioNumberOfEntries(&rnum);
