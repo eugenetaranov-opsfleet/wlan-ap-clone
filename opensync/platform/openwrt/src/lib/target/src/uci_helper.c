@@ -160,6 +160,85 @@ int uci_remove(char* type, char* section, int section_index, char* option)
     return rc;
 }
 
+bool uci_add_write(char* type, char* section)
+{
+    struct uci_ptr ptr;
+    struct uci_context *ctx = NULL;
+    struct uci_package *pkg = NULL;
+    int rc = 0;
+
+    ctx = uci_alloc_context();
+    if (!ctx) return false;
+
+    if(UCI_OK != uci_load(ctx, type, &pkg))
+        return false;
+
+    if((pkg = uci_lookup_package(ctx, type)) != NULL)
+    {
+        ptr.p = pkg;
+        uci_add_section(ctx, pkg, section, &ptr.s);
+    }
+
+    if ((rc = uci_commit(ctx, &ptr.p, false)) != UCI_OK)
+    {
+        LOGN("UCI Add  %s.@%s commit error: %d", type, section, rc);
+        uci_free_context(ctx);
+        return false;
+    }
+
+    uci_free_context(ctx);
+
+    return true;
+
+}
+
+bool uci_write_nw(char* type, char* section, char * option, char *uci_value)
+{
+    struct uci_ptr ptr;
+    struct uci_context *ctx;
+    char   uci_cmd[80];
+    int rc;
+
+    if (!uci_value)  return UCI_ERR_MEM;
+
+    if (!option)
+        snprintf(uci_cmd,sizeof(uci_cmd),"%s.%s", type, section);
+    else
+        snprintf(uci_cmd,sizeof(uci_cmd),"%s.%s.%s", type, section, option);
+
+    LOGN("UCI command write: %s value: %s", uci_cmd, uci_value );
+
+    ctx = uci_alloc_context();
+    if (!ctx) return false;
+
+    if ((rc = uci_lookup_ptr(ctx, &ptr, uci_cmd, true)) != UCI_OK ||
+            (ptr.o == NULL || ptr.o->v.string == NULL))
+    {
+         /* Handle new option creation case */
+         ptr.option = option;
+    }
+
+    ptr.value = uci_value;
+
+    if ((rc = uci_set(ctx, &ptr)) != UCI_OK)
+    {
+        LOGN("UCI write %s.%s.%s error: %d", type, section, option, rc);
+        uci_free_context(ctx);
+        return false;
+    }
+
+    // TODO: Might want to put commit in its own function
+    if ((rc = uci_commit(ctx, &ptr.p, false)) != UCI_OK)
+    {
+        LOGN("UCI write %s.%s.%s commit error: %d", type, section, option, rc);
+        uci_free_context(ctx);
+        return false;
+    }
+
+    uci_free_context(ctx);
+    return true;
+}
+
 /* 
  *  WiFi UCI interface - definitions
  */
@@ -167,6 +246,9 @@ int uci_remove(char* type, char* section, int section_index, char* option)
 #define WIFI_TYPE "wireless"
 #define WIFI_RADIO_SECTION "wifi-device"
 #define WIFI_VIF_SECTION "wifi-iface"
+
+#define NETWORK_TYPE "network"
+#define NETWORK_IFACE_SECTION "interface"
 
 /*
  *  WiFi Radio UCI interface
@@ -902,3 +984,88 @@ bool wifi_getApSecurityRadiusServer(
     return true;
 }
 
+
+bool wifi_setApBridgeInfo(int ssid_index, char *bridge_info)
+{
+    return( uci_write(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "network", bridge_info));
+}
+
+bool wifi_getApVlanId(int ssid_index, int *vlan_id)
+{
+    char result[10];
+    char *p = NULL;
+    *vlan_id = 1;
+
+    memset(result, 0, sizeof(result));
+    uci_read(WIFI_TYPE, WIFI_VIF_SECTION, ssid_index, "network", result, 10);
+
+    if ((p = strstr(result, "vlan")) != NULL)
+    {
+        long int v = strtol(&p[4], NULL, 10);
+
+	    *vlan_id = (int) v;
+	    LOGN("wifi_getApVlanId: %d", *vlan_id);
+        return UCI_OK;
+    }
+
+    return false;
+}
+
+#define MAX_VLANS 200
+struct vlan_list
+{
+    int vlan[MAX_VLANS];
+    int index;
+} vlist;
+
+bool wifi_setApVlanNetwork(int ssid_index, int vlan_id)
+{
+    char tmp[10];
+    char eth[10];
+    char vlan[10];
+    char vendor[128];
+    int index = 0;
+
+    if (vlan_id > 2)
+    {
+        for (index = 0; index < vlist.index; index++)
+        {
+            if (vlist.vlan[index] == vlan_id)
+               return true;
+        }
+        vlist.vlan[vlist.index++] = vlan_id;
+
+        memset(vlan, 0, sizeof(vlan));
+        snprintf(vlan, sizeof(vlan) - 1, "%d", vlan_id);
+
+        LOGI("wifi_setApVlanNetwork =  %d", vlan_id);
+        memset(tmp, 0, sizeof(tmp));
+        snprintf(tmp, sizeof(tmp) - 1, "vlan%d", vlan_id);
+
+        memset(eth, 0, sizeof(eth));
+        snprintf(eth, sizeof(eth) - 1, "eth1.%d", vlan_id);
+
+        uci_write_nw(NETWORK_TYPE, tmp, NULL, NETWORK_IFACE_SECTION);
+        uci_write_nw(NETWORK_TYPE, tmp, "type", "bridge");
+        uci_write_nw(NETWORK_TYPE, tmp, "ifname", eth);
+        uci_write_nw(NETWORK_TYPE, tmp, "proto", "static");
+        uci_write_nw(NETWORK_TYPE, tmp, "ipaddr", "192.168.100.1");
+        uci_write_nw(NETWORK_TYPE, tmp, "netmask", "255.255.255.0");
+
+        memset(vendor, 0, sizeof(vendor));
+
+        if (target_platform_version_get(vendor, 128))
+        {
+            if (!strncmp(vendor, "OPENWRT_EA8300", 14))
+            {
+                uci_add_write("network", "switch_vlan");
+                uci_write("network", "switch_vlan", -1, "device", "switch0");
+                uci_write("network", "switch_vlan", -1, "ports", "0t 5t");
+                uci_write("network", "switch_vlan", -1, "vlan", vlan);
+            }
+        }
+        return wifi_setApBridgeInfo(ssid_index, tmp);
+    }
+
+    return false;
+}

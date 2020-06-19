@@ -737,6 +737,7 @@ bool vif_state_get(int ssidIndex, struct schema_Wifi_VIF_State *vstate)
 //    char           band[128];
 //    bool           rrm;
 //    bool           btm;
+    int vlan_id;
 
     memset(vstate, 0, sizeof(*vstate));
     schema_Wifi_VIF_State_mark_all_present(vstate);
@@ -780,10 +781,14 @@ bool vif_state_get(int ssidIndex, struct schema_Wifi_VIF_State *vstate)
     }
 
     // vlan_id (w/ exists)
-//    SCHEMA_SET_INT(vstate->vlan_id, target_map_ifname_to_vlan(vstate->if_name));
-    vstate->vlan_id = 0;
-    if (vstate->vlan_id == 0)
+    ret = wifi_getApVlanId(ssidIndex, &vlan_id);
+    if (ret == UCI_OK)
     {
+        SCHEMA_SET_INT(vstate->vlan_id, vlan_id);
+    }
+    else
+    {
+        LOGW("Cannot get VlanId for SSID index %d", ssidIndex);
         vstate->vlan_id_exists = false;
     }
 
@@ -1127,6 +1132,26 @@ bool target_vif_config_set2(
         else
         {
             LOGN("%s: Updated AP bridge to %d", ssid_ifname, bval);
+        }
+    }
+
+    if (changed->bridge) {
+        memset(tmp, 0, sizeof(tmp));
+        snprintf(tmp, sizeof(tmp) - 1, "%s", vconf->bridge);
+
+	ret = wifi_setApBridgeInfo(ssid_index, tmp);
+        if (ret != true)
+        {
+            LOGE("%s: Failed to set new bridge '%s'", ssid_ifname, tmp);
+        }
+
+    }
+
+    if (changed->vlan_id) {
+        ret = wifi_setApVlanNetwork(ssid_index, vconf->vlan_id);
+        if (ret != true)
+        {
+            LOGE("%s: Failed to set new vlan Network %d", ssid_ifname, vconf->vlan_id);
         }
     }
 

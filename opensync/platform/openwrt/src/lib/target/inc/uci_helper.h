@@ -109,6 +109,7 @@ int wifi_getApSecurityKeyPassphrase(int ssid_index, char *buf, size_t buf_len);
 bool wifi_getApSecurityModeEnabled(int ssid_index, char *buf, size_t buf_len);
 bool wifi_getApSecurityRadiusServer(int ssid_index, char *radius_ip, char *radius_port, char *radius_secret);
 bool wifi_setFtMode(int ssid_index, const struct schema_Wifi_VIF_Config *vconf);
+bool wifi_getApVlanId(int ssidIndex, int *vlan_id);
 
 /*
  *  Functions to set SSID parameters
@@ -118,6 +119,8 @@ bool wifi_setApSecurityModeEnabled(int ssid_index, const struct schema_Wifi_VIF_
 bool wifi_setApSsidAdvertisementEnable(int ssid_index, bool enabled);
 bool wifi_setApIsolationEnable(int ssid_index, bool enabled);
 bool wifi_setSsidEnabled(int ssid_index, bool enabled);
+bool wifi_setApBridgeInfo(int ssid_index, char *bridge_info);
+bool wifi_setApVlanNetwork(int ssid_index, int vlan_id);
 
 /*
  * Functions to access OVSDB callbacks
