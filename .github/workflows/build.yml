@@ -2,7 +2,9 @@ name: Build OpenWrt with OpenSync
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, "*" ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build-ea8300:
