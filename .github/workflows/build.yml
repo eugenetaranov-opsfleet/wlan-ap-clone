@@ -18,7 +18,7 @@ jobs:
     - name: Build Image for EA8300
       env:
           GH_BUILD_USERNAME: ${{ secrets.GH_BUILD_USERNAME }}
-          GH_BUILD_PASSWORD: ${{ secrets.GH_BUILD_PASSWORD }}
+          GH_BUILD_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       run: |
         make TARGET=IPQ40XX
         TAG=$(date +%Y-%m-%d)-$(git rev-parse --short HEAD)
@@ -37,7 +37,7 @@ jobs:
     - name: Build Image for ECW5410
       env:
           GH_BUILD_USERNAME: ${{ secrets.GH_BUILD_USERNAME }}
-          GH_BUILD_PASSWORD: ${{ secrets.GH_BUILD_PASSWORD }}
+          GH_BUILD_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       run: |
         make TARGET=ECW5410
         TAG=$(date +%Y-%m-%d)-$(git rev-parse --short HEAD)
@@ -56,7 +56,7 @@ jobs:
     - name: Build Image for AP2220
       env:
           GH_BUILD_USERNAME: ${{ secrets.GH_BUILD_USERNAME }}
-          GH_BUILD_PASSWORD: ${{ secrets.GH_BUILD_PASSWORD }}
+          GH_BUILD_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       run: |
         make TARGET=AP2220
         TAG=$(date +%Y-%m-%d)-$(git rev-parse --short HEAD)
@@ -75,7 +75,7 @@ jobs:
     - name: Build Image for ECW5211
       env:
           GH_BUILD_USERNAME: ${{ secrets.GH_BUILD_USERNAME }}
-          GH_BUILD_PASSWORD: ${{ secrets.GH_BUILD_PASSWORD }}
+          GH_BUILD_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       run: |
         make TARGET=ECW5211
         TAG=$(date +%Y-%m-%d)-$(git rev-parse --short HEAD)
