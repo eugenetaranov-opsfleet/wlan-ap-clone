@@ -13,12 +13,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        token: ${{ secrets.GH_BUILD_TOKEN }}
+        # token: ${{ secrets.GH_BUILD_TOKEN }}
         submodules: true
     - name: Build Image for EA8300
-      env:
-          GH_BUILD_USERNAME: ${{ secrets.GH_BUILD_USERNAME }}
-          GH_BUILD_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      # env:
+      #     GH_BUILD_USERNAME: ${{ secrets.GH_BUILD_USERNAME }}
+      #     GH_BUILD_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       run: |
         make TARGET=IPQ40XX
         TAG=$(date +%Y-%m-%d)-$(git rev-parse --short HEAD)
@@ -32,7 +32,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        token: ${{ secrets.GH_BUILD_TOKEN }}
+        # token: ${{ secrets.GH_BUILD_TOKEN }}
         submodules: true
     - name: Build Image for ECW5410
       env:
@@ -51,7 +51,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        token: ${{ secrets.GH_BUILD_TOKEN }}
+        # token: ${{ secrets.GH_BUILD_TOKEN }}
         submodules: true
     - name: Build Image for AP2220
       env:
@@ -70,7 +70,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        token: ${{ secrets.GH_BUILD_TOKEN }}
+        # token: ${{ secrets.GH_BUILD_TOKEN }}
         submodules: true
     - name: Build Image for ECW5211
       env:
