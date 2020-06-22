@@ -68,6 +68,8 @@ else
 fi
 
 echo "Building image ..."
+echo ****
+hostname
 cd $BUILD_DIR
 make -j$(nproc)  V=s OPENSYNC_SRC=${ROOT_PATH} TARGET=$1 2>&1 | tee build.log
 echo "Done"

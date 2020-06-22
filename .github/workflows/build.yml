@@ -20,32 +20,30 @@ jobs:
       with:
         # token: ${{ secrets.GH_BUILD_TOKEN }}
         submodules: true
-    - name: Sonar scanner setup
-      run: |
-        mkdir /tmp/sonar
-        cd /tmp/sonar
-        curl -LO https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
-        unzip build-wrapper-linux-x86.zip
-        rm build-wrapper-linux-x86.zip
-        curl -LO https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
-        unzip sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
-        mv sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux sonar-scanner-linux
-        rm sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
-      env:
-        SONAR_SCANNER_VERSION: 4.2.0.1873
-    - name: Cache sonar scanner
-      uses: actions/cache@v1
-      with:
-        path: /tmp/sonar
-        key: ${{ runner.os }}-sonarscanner
+    # - name: Sonar scanner setup
+    #   run: |
+    #     mkdir /tmp/sonar
+    #     cd /tmp/sonar
+    #     curl -LO https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+    #     unzip build-wrapper-linux-x86.zip
+    #     rm build-wrapper-linux-x86.zip
+    #     curl -LO https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+    #     unzip sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+    #     mv sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux sonar-scanner-linux
+    #     rm sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+    #   env:
+    #     SONAR_SCANNER_VERSION: 4.2.0.1873
+    # - name: Cache sonar scanner
+    #   uses: actions/cache@v1
+    #   with:
+    #     path: /tmp/sonar
+    #     key: ${{ runner.os }}-sonarscanner
     - name: Build Image for EA8300
-      env:
-        PATH: ${{ env.PATH }}:/tmp/sonar/sonar-scanner-linux/bin/:/tmp/sonar/build-wrapper-linux-x86
+      # env:
       #     GH_BUILD_USERNAME: ${{ secrets.GH_BUILD_USERNAME }}
       #     GH_BUILD_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        build-wrapper-linux-x86-64 --out-dir openwrt/bin/targets/ipq40xx/generic make TARGET=IPQ40XX
-        sonar-scanner -Dsonar.organization=${{ env.SONAR_ORGANIZATION }} -Dsonar.projectKey=${{ env.SOANR_PROJECT_KEY }} -Dsonar.sources=. -Dsonar.host.url=${{ env.SONAR_URL }} -Dsonar.cfamily.build-wrapper-output=openwrt/bin/targets/ipq40xx/generic -Dsonar.login=${{ secrets.SONAR_LOGIN }}
+        make TARGET=IPQ40XX
         TAG=$(date +%Y-%m-%d)-$(git rev-parse --short HEAD)
         TAR_NAME="ea8300-$TAG.tar.gz"
         tar cfz "$TAR_NAME" -C openwrt/bin/targets/ipq40xx/generic .

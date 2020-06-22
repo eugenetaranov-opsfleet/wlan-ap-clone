@@ -8,3 +8,12 @@ RUN apt-get update \
     && apt-get clean
 
 RUN pip3 install kconfiglib
+RUN	cd /tmp && \
+    curl -LO https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip && \
+    unzip build-wrapper-linux-x86.zip && \
+    rm build-wrapper-linux-x86.zip && \
+    curl -LO https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip && \
+    unzip sonar-scanner-cli-4.2.0.1873-linux.zip && \
+    rm sonar-scanner-cli-4.2.0.1873-linux.zip && \
+    mv sonar-scanner-4.2.0.1873-linux sonar-scanner-linux
+ENV	PATH=$PATH:/tmp/sonar-scanner-linux/bin/:/tmp/build-wrapper-linux-x86
