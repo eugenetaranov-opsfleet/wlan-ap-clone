@@ -14,7 +14,6 @@ env:
 jobs:
   build-ea8300:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
       with:
@@ -37,7 +36,8 @@ jobs:
         path: /tmp/sonar
         key: ${{ runner.os }}-sonarscanner
     - name: Build Image for EA8300
-      # env:
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #     GH_BUILD_USERNAME: ${{ secrets.GH_BUILD_USERNAME }}
       #     GH_BUILD_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       run: |
