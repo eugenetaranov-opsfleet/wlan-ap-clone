@@ -28,6 +28,7 @@ jobs:
         unzip sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
         mv sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux sonar-scanner-linux
         rm sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+        echo "::add-path::/tmp/sonar/sonar-scanner-linux/bin/"
       env:
         SONAR_SCANNER_VERSION: 4.2.0.1873
     - name: Cache sonar scanner
@@ -36,11 +37,13 @@ jobs:
         path: /tmp/sonar
         key: ${{ runner.os }}-sonarscanner
     - name: Build Image for EA8300
-      env:
-        PATH: ${{ env.PATH }}:/tmp/sonar/sonar-scanner-linux/bin/
+      # env:
       #     GH_BUILD_USERNAME: ${{ secrets.GH_BUILD_USERNAME }}
       #     GH_BUILD_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        echo "((***))"
+        echo $PATH
+        echo ${{ env.PATH }}
         make TARGET=IPQ40XX
         sonar-scanner -Dsonar.organization=${{ env.SONAR_ORGANIZATION }} -Dsonar.projectKey=${{ env.SOANR_PROJECT_KEY }} -Dsonar.sources=. -Dsonar.host.url=${{ env.SONAR_URL }} -Dsonar.cfamily.build-wrapper-output=/tmp/bw-out/ -Dsonar.login=${{ secrets.SONAR_LOGIN }}
         TAG=$(date +%Y-%m-%d)-$(git rev-parse --short HEAD)
