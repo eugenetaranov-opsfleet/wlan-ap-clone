@@ -41,9 +41,6 @@ jobs:
       #     GH_BUILD_USERNAME: ${{ secrets.GH_BUILD_USERNAME }}
       #     GH_BUILD_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        echo "((***))"
-        echo $PATH
-        echo ${{ env.PATH }}
         make TARGET=IPQ40XX
         sonar-scanner -Dsonar.organization=${{ env.SONAR_ORGANIZATION }} -Dsonar.projectKey=${{ env.SOANR_PROJECT_KEY }} -Dsonar.sources=. -Dsonar.host.url=${{ env.SONAR_URL }} -Dsonar.cfamily.build-wrapper-output=/tmp/bw-out/ -Dsonar.login=${{ secrets.SONAR_LOGIN }}
         TAG=$(date +%Y-%m-%d)-$(git rev-parse --short HEAD)
