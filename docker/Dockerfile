@@ -13,4 +13,3 @@ RUN	cd /tmp && \
     curl -LO https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip && \
     unzip build-wrapper-linux-x86.zip && \
     rm build-wrapper-linux-x86.zip && \
-ENV	PATH=$PATH:/tmp/build-wrapper-linux-x86

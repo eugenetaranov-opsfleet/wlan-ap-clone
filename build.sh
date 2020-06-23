@@ -69,5 +69,5 @@ fi
 
 echo "Building image ..."
 cd $BUILD_DIR
-build-wrapper-linux-x86-64 --out-dir /tmp/bw-out make -j$(nproc)  V=s OPENSYNC_SRC=${ROOT_PATH} TARGET=$1 2>&1 | tee build.log
+/tmp/build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir /tmp/bw-out make -j$(nproc)  V=s OPENSYNC_SRC=${ROOT_PATH} TARGET=$1 2>&1 | tee build.log
 echo "Done"
