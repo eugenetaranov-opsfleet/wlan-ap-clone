@@ -16,4 +16,5 @@ RUN	cd /tmp && \
     curl -LO https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip && \
     unzip sonar-scanner-cli-4.2.0.1873-linux.zip && \
     mv sonar-scanner-4.2.0.1873-linux sonar-scanner-linux && \
-    rm sonar-scanner-cli-4.2.0.1873-linux.zip
+    rm sonar-scanner-cli-4.2.0.1873-linux.zip && \
+    mkdir -p /home/runner/.sonar
