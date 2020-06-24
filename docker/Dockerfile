@@ -17,4 +17,4 @@ RUN	cd /tmp && \
     unzip sonar-scanner-cli-4.2.0.1873-linux.zip && \
     mv sonar-scanner-4.2.0.1873-linux sonar-scanner-linux && \
     rm sonar-scanner-cli-4.2.0.1873-linux.zip && \
-    mkdir -p /home/runner/.sonar
+    mkdir -p /home/runner/.sonar/cache/
