@@ -47,10 +47,10 @@ jobs:
         tar cfz "$TAR_NAME" -C openwrt/bin/targets/ipq40xx/generic .
         
         # curl -u "$GH_BUILD_USERNAME":"$GH_BUILD_PASSWORD" -T "$TAR_NAME" "https://tip.jfrog.io/artifactory/tip-wlan-ap-firmware/ea8300/"$TAR_NAME""
-    - uses: actions/upload-artifact@v2
-      with:
-        name: buildwrapper-ea8300
-        path: /tmp/bw-out/
+    # - uses: actions/upload-artifact@v2
+    #   with:
+    #     name: buildwrapper-ea8300
+    #     path: /tmp/bw-out/
     # - name: Sonar analysis for EA8300
     #   env:
     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
