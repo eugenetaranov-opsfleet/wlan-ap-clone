@@ -1,7 +1,7 @@
 .PHONY: all opensync clean purge
 
 all:
-	./dock-run.sh ./build.sh  $(TARGET) $(SDK_URL)
+	./dock-run.sh ./build.sh $(TARGET) $(SDK_URL)
 
 opensync:
 	./dock-run.sh make -C openwrt package/feeds/opensync/opensync/clean
