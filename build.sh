@@ -76,5 +76,5 @@ echo SONAR_PROJECT_KEY $SONAR_PROJECT_KEY
 echo "(((****)))"
 
 /tmp/build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir /tmp/bw-out make -j$(nproc) V=s OPENSYNC_SRC=${ROOT_PATH} TARGET=$1 2>&1 | tee build.log
-/tmp/sonar/sonar-scanner-linux/bin/sonar-scanner -Dsonar.organization=${SONAR_ORGANIZATION} -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sources=. -Dsonar.host.url=${SONAR_URL} -Dsonar.cfamily.build-wrapper-output=/tmp/bw-out/ -Dsonar.login=${SONAR_LOGIN}
+/tmp/sonar-scanner-linux/bin/sonar-scanner -Dsonar.organization=${SONAR_ORGANIZATION} -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sources=. -Dsonar.host.url=${SONAR_URL} -Dsonar.cfamily.build-wrapper-output=/tmp/bw-out/ -Dsonar.login=${SONAR_LOGIN}
 echo "Done"
